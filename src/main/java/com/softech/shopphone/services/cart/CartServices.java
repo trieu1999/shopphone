@@ -1,6 +1,7 @@
 package com.softech.shopphone.services.cart;
 
 import java.net.InetAddress;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -181,21 +182,31 @@ public class CartServices {
 						prmCart.setId_product(Cart.getId_product());
 						prmCart.setNum_product(Cart.getNum_product());
 						prmCart.setName_product(rstProduct.getName());
-						prmCart.setPrice_product(rstProduct.getPrice());
+						prmCart.setPrice_product(String.format("%.0f", rstProduct.getPrice()));
+						System.out.println(String.format("%.0f", rstProduct.getPrice()));
 						prmCart.setImage_product(rstProduct.getImage());
 						
+						Integer numPtmp = Cart.getNum_product() == 0 ? 1 : Cart.getNum_product();	//check_error
 						LstPrmCartCus.add(prmCart);
-						TotalMoney = TotalMoney + rstProduct.getPrice();
+						TotalMoney = TotalMoney + (rstProduct.getPrice()*numPtmp);
+						
+						
+						
 
+//						System.out.println(String.format("%.0f", TotalMoney));
+						
+//						  DecimalFormat df = new DecimalFormat("#");
+//					        df.setMaximumFractionDigits(8);
+//					        System.out.println(df.format(TotalMoney));
 						
 					}
 				
 				
-		         dataHolder.add("LstCart", LstPrmCartCus);
-				 dataHolder.add("TotalMoney", TotalMoney);
+		         dataHolder.add("LstCart", LstPrmCartCus);	//[0]
+				 dataHolder.add("TotalMoney", TotalMoney);	//[1]
 
 		         dataHolder.putModel("LstCart", LstPrmCartCus);
-		         dataHolder.putModel("TotalMoney", TotalMoney);
+		         dataHolder.putModel("TotalMoney", String.format("%.0f", TotalMoney));
 
 		         return dataHolder;
 			}
@@ -219,11 +230,14 @@ public class CartServices {
 					prmCart.setId_product(Cart.getId_product());
 					prmCart.setNum_product(Cart.getNum_product());
 					prmCart.setName_product(rstProduct.getName());
-					prmCart.setPrice_product(rstProduct.getPrice());
+					prmCart.setPrice_product(String.format("%.0f", rstProduct.getPrice()));
 					prmCart.setImage_product(rstProduct.getImage());
 					
 					LstPrmCartCurrentCus.add(prmCart);
-					TotalMoney = TotalMoney + rstProduct.getPrice();
+					
+					Integer numPtmp = Cart.getNum_product() == 0 ? 1 : Cart.getNum_product();	//check_error
+					TotalMoney = TotalMoney + (rstProduct.getPrice()*numPtmp);
+					
 				}
 	         
 	         
@@ -231,7 +245,7 @@ public class CartServices {
 				 dataHolder.add("TotalMoney", TotalMoney);
 
 		         dataHolder.putModel("LstCart", LstPrmCartCurrentCus);
-		         dataHolder.putModel("TotalMoney", TotalMoney);
+		         dataHolder.putModel("TotalMoney", String.format("%.0f", TotalMoney));
 
 				
 	     }

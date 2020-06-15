@@ -1,4 +1,4 @@
-package com.softech.shopphone.index;
+package com.softech.shopphone.controller.index;
 
 
 import java.util.List;
@@ -24,8 +24,7 @@ import com.softech.shopphone.entity.dataHolder.DataHolder;
 import com.softech.shopphone.entity.product.RstProduct;
 import com.softech.shopphone.services.cart.CartServices;
 import com.softech.shopphone.services.checkout.CheckoutServices;
-//import com.softech.shopphone.entity.account.RstLogin;
-import com.softech.shopphone.services.login.LoginServices;
+import com.softech.shopphone.services.index.IndexServices;
 import com.softech.shopphone.services.singleproduct.SingleProductService;
 
 /**
@@ -41,7 +40,7 @@ public class IndexController {
 	private LoginDao loginDao;
 	
 	@Autowired
-	private LoginServices loginService;
+	private IndexServices loginService;
 	
 	@Autowired
 	private CartServices cartServices;
@@ -54,6 +53,16 @@ public class IndexController {
 	@GetMapping(path = "/web/login-register")
 	public String loginRegister() {
 		return "login-register";
+	}
+	
+	@GetMapping(path = "web/contact")
+	public String contact() {
+		return "contact";
+	}
+	
+	@GetMapping(path = "web/about-us")
+	public String promotion() {
+		return "promotion";
 	}
 
 	
@@ -113,6 +122,7 @@ public class IndexController {
 		DataHolder dataHolder = loginService.singOut(request, response, user_token, model);
 		user_token = null;									//reset before to count cart
 		
+		loginService.confirmUser(dataHolder, user_token);
 		loginService.processIndex(dataHolder, user_token);
 		
 		
@@ -128,7 +138,7 @@ public class IndexController {
 	public ResponseEntity<Object> quickView(@CookieValue(name = "user_token", required = false) String user_token, Model model, @RequestParam Integer idProduct) {
 		DataHolder dataHolder = new DataHolder();
 		
-		dataHolder = singleProductService.getSingleProduct(user_token, idProduct);
+		singleProductService.getSingleProduct(dataHolder, user_token, idProduct);
 		
 		return new ResponseEntity<>(dataHolder, HttpStatus.OK);
 	}

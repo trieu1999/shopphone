@@ -14,6 +14,16 @@ function alert(result){
 }
 
 
+function errorMsg(err){
+    $('#error-modal').modal("show");
+    $('#error-modal-msg').text(err);
+}
+
+function okMsg(okmsg){
+    $('#error-modal').modal("show");
+    $('#error-modal-msg').text(okmsg);
+}
+
 function login() {
     console.log("run");
     console.log($("form").serialize());
@@ -144,7 +154,7 @@ function processquickView(result){
 }
 
 function addCart(idProduct){
-    var numProduct = 1
+    var numProduct = $('#quantity-product').val();
     var dataLst = "idProduct="+idProduct+"&numProduct="+numProduct;
 
     $.ajax({
@@ -172,6 +182,11 @@ function processCartData(result){
         $('#cart-badge-num-product').text(valueData);
     }
     
+}
+    // Pay cart
+function toPay(idP){
+    addCart(idP);
+    window.location.assign("/web/checkout")
 }
 
 
@@ -206,7 +221,7 @@ function processGetCartData(result){
                     '</a>'+
                     '<div class="minicart-product-details">'+
                         '<h6><a href="single-product.html">' + lstC[i].name_product + '</a></h6>'+
-                        '<span>' + lstC[i].price_product + ' x ' + lstC[i].num_product + '</span>'+
+                        '<span class="price">' + lstC[i].price_product + '</span><span> x ' + lstC[i].num_product + '</span>'+
                     '</div>'+
                     '<button class="close" title="Remove">'+
                         '<i class="fa fa-close"></i>'+
@@ -214,17 +229,33 @@ function processGetCartData(result){
                 '</li>'
             )
         }
+        result.data[1].keyData == "TotalMoney"  ?   $('#minicart-total').text(result.data[1].valueData) : "0";
+
         $('#cart-badge-num-product').text(lstC.length);
+
+        convertPrice();
+
     }
 
 }
 
+
 function goOrder(){
+    $('.go-order-msg').empty();
     var cusName = $('#checkout_cus_name').val();
     var cusAddress = $('#checkout_cus_address').val();
     var cusEmail = $('#checkout_cus_email').val();
     var cusPhone = $('#checkout_cus_phone').val();
     var cusNote = $('#checkout_note').val();
+    var checkoutCod = $('#checkout_note').val();    
+    if (cusName == "" || cusAddress == "" || cusEmail == "" || cusPhone == "") {
+        $('.go-order-msg').text('Bạn phải nhập đầy đủ thông tin địa chỉ!')
+
+        return;
+    }
+
+    window.scrollTo(0,0);
+    watingModal("show");
 
     var dataLst = "cusName="+cusName+"&cusAddress="+cusAddress+"&cusEmail="+cusEmail+"&cusPhone="+cusPhone+"&cusNote="+cusNote;
 
@@ -233,7 +264,7 @@ function goOrder(){
         method: "POST",
         data: dataLst,
         success: result => {
-            processGetCartData(result);
+            processGoOrderData(result);
            
         },
         error: error => {
@@ -242,10 +273,44 @@ function goOrder(){
         }
     });
 
+
 }
 
 
+function processGoOrderData(result){
+ watingModal("hide");
+ var data = result.data;
+ var msg = "";
+ for (let i = 0; i < data.length; i++) {
+    if (data[i].keyData == "error") {
+        errorMsg(data[i].valueData);
+        return;
+    } 
+    if(data[i].keyData == "idCheckOut"){
+        msg = data[i].valueData;
+    }
+     
+ }
+  
+    $('#checkOutId').text(msg);
+    $('#checkOutModel').modal("show");
+}
 
+
+function watingModal(status){
+    switch (status) {
+        case "show":
+            $('.waiting-modal').removeClass('d-none');
+            break;
+            
+        case "hide":
+            $('.waiting-modal').addClass('d-none');
+            break;
+        default:
+            break;
+    }
+   
+}
 
 
 
@@ -359,16 +424,29 @@ $('#insert-product-btn').click(function(e){
 })
 
 function onLoadIndex(){
+        // let prices = $('.price');
+    
+        // for (let p of prices){
+        //     let value = p.innerText;
+        //     value = value.replace(/\s+/g, '');
+        //     value = value.replace(/[.]+/g, '');
+        //     let arr = value.split('');
+        //     let res = "";
+        //     for (let i = arr.length - 1; i >= 0; i --)
+        //         res = ((i && (arr.length - i)%3 == 0)?".":"") + arr[i] + res;
+        //     p.innerText = res;
+        // }
+        setInterval(onloadCheckout, 1000);
     
 }
 
 $('#admin-crud-product').click(function (){
 
     $.ajax({
-        url: "/web/CRUDProduct",
+        url: "/web/CRUDShowProduct",
         method: "POST",
         success: result => {
-            processCRUDProduct(result);
+            processCRUDShowProduct(result);
         },
         error: error => {
             console.log("error");
@@ -377,92 +455,249 @@ $('#admin-crud-product').click(function (){
     })
 });
 
-function processCRUDProduct(result){
-    $('#admin-list-produc-tbody').empty();
+function processCRUDShowProduct(result){
+    $('#admin-product-list').empty();
     if (result.data[0].keyData == "lstProduct") {
         var lstP = result.data[0].valueData;
         for (let i = 0; i < lstP.length; i++) {
-           $('#admin-list-produc-tbody').append(
-                '<tr>' +
-                '<td scope="row" class="id-product"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].id_product +'</span></td>' + 
-                '<td scope="row" class="id-product"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].id_product +'</textarea></td>' + 
 
-                '<td scope="row" class="id-product"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].type +'</span></td>' +
-                '<td scope="row" class="id-product"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].type +'</textarea></td>' +
 
-                '<td class="name"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].name + '</span></td>' +
-                '<td class="name"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].name + '</textarea></td>' +
 
-                '<td class="id-promotion"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].id_promotion + '</span></td>' +
-                '<td class="id-promotion"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].id_promotion + '</textarea></td>' +
 
-                '<td class="inventory"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].inventory + '</span></td>' +
-                '<td class="inventory"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].inventory + '</textarea></td>' +
 
-                '<td class="producer"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].producer + '</span></td>' +
-                '<td class="producer"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].producer + '</textarea></td>' +
+           $('#admin-product-list').append(
+                        '<div class="col-lg-3 mt-15">'+
+                            '<div class="single-product-wrap">'+
+                                '<div class="product-image">'+
+                                    '<a>'+
+                                        '<img src="'+ lstP[i].image +'">'+
+                                    '</a>'+
+                                    '<span class="sticker">New</span>'+
+                                '</div>'+
+                                '<div class="product_desc">'+
+                                    '<div class="product_desc_info">'+
+                                        '<div class="product-review">'+
+                                            '<h5 class="manufacturer">'+
+                                                '<a href="shop-left-sidebar">'+ lstP[i].producer +'</a>'+
+                                            '</h5>'+
+                                            '<div class="rating-box">'+
+                                                '<ul class="rating">'+
+                                                    '<li><i class="fa fa-star-o"></i></li>'+
+                                                    '<li><i class="fa fa-star-o"></i></li>'+
+                                                    '<li><i class="fa fa-star-o"></i></li>'+
+                                                    '<li class="no-star"><i class="fa fa-star-o"></i></li>'+
+                                                    '<li class="no-star"><i class="fa fa-star-o"></i></li>'+
+                                                '</ul>'+
+                                            '</div>'+
+                                        '</div>'+
+                                        '<h4><div class="product_name">'+ lstP[i].name +'</div></h4>'+
+                                        '<div class="price-box">'+
+                                            '<span class="new-price price">$</span>'+ lstP[i].priceD +' <small>VND</small>'+
+                                        '</div>'+
+                                    '</div>'+
+                                    '<div class="add-actions">'+
+                                        '<ul class="add-actions-link li-cursor-pointer">'+
+                                            '<li class="add-cart active cursor-pointer" data-toggle="modal" data-target="#exampleModalCenter" onclick="adminCRUDEdit('+ lstP[i].id_product +');"><span>CHỈNH SỬA</span></li>'+
+                                        '</ul>'+
+                                    '</div>'+
+                                '</div>'+
+                            '</div>'+
+                        '</div>'
 
-                '<td class="ram"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].ram + '</span></td>' +
-                '<td class="ram"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].ram + '</textarea></td>' +
-
-                '<td class="cpu"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].cpu + '</span></td>' +
-                '<td class="cpu"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].cpu + '</textarea></td>' +
-
-                '<td class="monitor"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].monitor + '</span></td>' +
-                '<td class="monitor"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].monitor + '</textarea></td>' +
-
-                '<td class="system"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].system + '</span></td>' +
-                '<td class="system"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].system + '</textarea></td>' +
-
-                '<td class="color"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].color + '</span></td>' +
-                '<td class="color"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].color + '</textarea></td>' +
-
-                '<td class="rom"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].rom + '</span></td>' +
-                '<td class="rom"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].rom + '</textarea></td>' +
-
-                '<td class="font-camera"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].font_camera + '</span></td>' +
-                '<td class="font-camera"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].font_camera + '</textarea></td>' +
-                
-                '<td class="back-camera"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].back_camera + '</span></td>' +
-                '<td class="back-camera"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].back_camera + '</textarea></td>' +
-
-                '<td class="battery"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].battery + '</span></td>' +
-                '<td class="battery"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].battery + '</textarea></td>' +
-
-                '<td class="image"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].image + '</span></td>' +
-                '<td class="image"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].image + '</textarea></td>' +
-
-                '<td class="sell-quantity"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].sell_quantity + '</span></td>' +
-                '<td class="sell-quantity"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].sell_quantity + '</textarea></td>' +
-
-                '<td class="description"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].description + '</span></td>' +
-                '<td class="description"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].description + '</textarea></td>' +
-
-                '<td class="rate"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].rate + '</span></td>' +
-                '<td class="rate"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].rate + '</textarea></td>' +
-
-                '<td class="entry-price"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].entry_price + '</span></td>' +
-                '<td class="entry-price"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].entry_price + '</textarea></td>' +
-
-                '<td class="price"><span class=" row-id-' + lstP[i].id_product + ' ">'+ lstP[i].price + '</span></td>' +
-                '<td class="price"><textarea class="d-none row-id-' + lstP[i].id_product + ' ">'+ lstP[i].price + '</textarea></td>' +
-
-                '<td class=""> <input onclick="CrudEedit(' + lstP[i].id_product + ');" type="button" value="Chỉnh sửa" /> <input style="margin-left: 10px;" onclick="CrudDelete(' + lstP[i].id_product + ');" type="button" value="Xoá" /></td>' +
-                '</tr>'
-           ); 
+           )
         }
       
     }
     
 };
 
-function CrudEedit(id_product){
-    $('textarea.row-id-'+id_product).removeClass('d-none');
-    $('span.row-id-'+id_product).addClass('d-none');
+
+function adminCRUDEdit(idProduct){
+var dataLst = "idProduct=" + idProduct;
+
+    $.ajax({
+        url: "/web/admin-get-product",
+        method: "POST",
+        data: dataLst,
+        success: result => {
+            processAdminCRUDEdit(result);
+        },
+        error: error => {
+            console.log("error");
+            alert('Lỗi hệ thống!!! ---> '+error);
+        }
+    })
+
+
+
+}
+
+function processAdminCRUDEdit(result){
+    $('#admin-modal-body').empty();
+    $('#admin-modal-title').empty();
+    if (result.data[0].keyData == "rstProduct") {
+
+
+    var product = result.data[0].valueData;
+
+
+    $('#admin-modal').modal("show");
+    $('#admin-modal-title').text(product.name);
+    $('#admin-modal-body').html(
+        '<input id="productName" type="text" value="' + product.name +'"/>'+
+        '<input id="productType" type="text" value="' + product.type +'"/>'+
+        '<input id="productId_promotion" type="text" value="' + product.id_promotion +'"/>'+
+        '<input id="productInventory" type="text" value="' + product.inventory +'"/>'+
+        '<input id="productProducer" type="text" value="' + product.producer +'"/>'+
+        '<input id="productRam" type="text" value="' + product.ram +'"/>'+
+        '<input id="productCpu" type="text" value="' + product.cpu +'"/>'+
+        '<input id="productMonitor" type="text" value="' + product.monitor +'"/>'+
+        '<input id="productSystem" type="text" value="' + product.system +'"/>'+
+        '<input id="productColor" type="text" value="' + product.color +'"/>'+
+        '<input id="productRom" type="text" value="' + product.rom +'"/>'+
+        '<input id="productFontCamera" type="text" value="' + product.font_camera +'"/>'+
+        '<input id="productBattery" type="text" value="' + product.battery +'"/>'+
+        '<input id="productImage" type="text" value="' + product.image +'"/>'+
+        '<input id="productSellQuantity" type="text" value="' + product.sell_quantity +'"/>'+
+        '<input id="productDescription" type="text" value="' + product.description +'"/>'+
+        '<input id="productRate" type="text" value="' + product.rate +'"/>'+
+        '<input id="productEntryPrice" type="text" value="' + product.entry_price +'"/>'+
+        '<input id="productPrice" type="text" value="' + product.price +'"/>'
+    );
+
+
+    $('#modal-dialog-footer').html(
+        '<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>'+
+        '<button type="button" class="btn btn-primary" onclick="adminCRUDEditConfirm('+product.id_product+');">Xác nhận</button>'+
+        '<button type="button" class="btn btn-danger" onclick="adminCRUDDeleteConfirm('+product.id_product+');">Xoá sản phẩm</button>'
+    )
+    }
 
 };
 
+function adminCRUDEditConfirm(idProduct) {
+    var productName = $('#productName').val();
+    var productType = $('#productType').val();
+    var productId_promotion = $('#productId_promotion').val();
+    var productInventory = $('#productInventory').val();
+    var productProducer = $('#productProducer').val();
+    var productRam = $('#productRam').val();
+    var productCpu = $('#productCpu').val();
+    var productMonitor = $('#productMonitor').val();
+    var productSystem = $('#productSystem').val();
+    var productColor = $('#productColor').val();
+    var productRom = $('#productRom').val();
+    var productFontCamera = $('#productFontCamera').val();
+    var productBattery = $('#productBattery').val();
+    var productImage = $('#productImage').val();
+    var productSellQuantity = $('#productSellQuantity').val();
+    var productDescription = $('#productDescription').val();
+    var productRate = $('#productRate').val();
+    var productEntryPrice = $('#productEntryPrice').val();
+    var productPrice = $('#productPrice').val();
+
+
+
+
+
+    var dataLst = "idProduct=" + idProduct + "&productName=" + productName + "&productType=" + productType + "&productId_promotion=" + productId_promotion + "&productInventory=" + productInventory + 
+        "&productProducer=" + productProducer + "&productRam=" + productRam  + "&productCpu=" + productCpu + "&productMonitor=" + productMonitor + 
+        "&productSystem=" + productSystem + "&productColor=" + productColor  + "&productRom=" + productRom + "&productFontCamera=" + productFontCamera + 
+        "&productBattery=" + productBattery + "&productImage=" + productImage  + "&productSellQuantity=" + productSellQuantity + "&productDescription=" + productDescription + 
+        "&productRate=" + productRate + "&productEntryPrice=" + productEntryPrice  + "&productPrice=" + productPrice;
+
+    $.ajax({
+        url: "/web/admin-edit-product",
+        method: "POST",
+        data: dataLst,
+        success: result => {
+            processMsg(result);
+            $('#admin-modal').modal("hide");
+
+            setTimeout(() => {
+                window.location.assign("/web/index");
+
+            }, 1000);
+
+        },
+        error: error => {
+            console.log("error");
+            alert('Lỗi hệ thống!!! ---> '+error);
+        }
+    })
+}
+
+function adminCRUDDeleteConfirm(idProduct) {
+    var dataLst = "idProduct=" + idProduct;
+
+    $.ajax({
+        url: "/web/admin-delete-product",
+        method: "POST",
+        data: dataLst,
+        success: result => {
+            processMsg(result);
+            $('#admin-modal').modal("hide");
+            setTimeout(() => {
+                window.location.assign("/web/index");
+            }, 1000);
+
+        },
+        error: error => {
+            console.log("error");
+            alert('Lỗi hệ thống!!! ---> '+error);
+        }
+    })
+    
+}
+
+
+
+function processMsg(result) {
+
+    watingModal("hide");
+    var data = result.data;
+    var msg = "";
+    for (let i = 0; i < data.length; i++) {
+       if (data[i].keyData == "error") {
+           errorMsg(data[i].valueData);
+           return;
+       } 
+       if(data[i].keyData == "success"){
+            okMsg(data[i].valueData);
+       }
+        
+    }
+}
+
+//--------------------------------------------------------------
+function convertPrice(){
+    let prices = $('.price');
+
+    for (let p of prices){
+        let value = p.innerText;
+        value = value.replace(/\s+/g, '');
+        value = value.replace(/[.]+/g, '');
+        let arr = value.split('');
+        let res = "";
+        for (let i = arr.length - 1; i >= 0; i --)
+            res = ((i && (arr.length - i)%3 == 0)?".":"") + arr[i] + res;
+        p.innerText = res;
+    
+};
+}
 
 function onloadCheckout(){
+    let prices = $('.price');
+
+    for (let p of prices){
+        let value = p.innerText;
+        value = value.replace(/\s+/g, '');
+        value = value.replace(/[.]+/g, '');
+        let arr = value.split('');
+        let res = "";
+        for (let i = arr.length - 1; i >= 0; i --)
+            res = ((i && (arr.length - i)%3 == 0)?".":"") + arr[i] + res;
+        p.innerText = res;
     
+};
 }

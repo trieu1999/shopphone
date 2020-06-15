@@ -1,53 +1,60 @@
-body{
-    background: -webkit-linear-gradient(left, #0072ff, #00c6ff);
+/*
+** Style Simple Ecommerce Theme for Bootstrap 4
+** Created by T-PHP https://t-php.fr/43-theme-ecommerce-bootstrap-4.html
+*/
+.bloc_left_price {
+    color: #c01508;
+    text-align: center;
+    font-weight: bold;
+    font-size: 150%;
 }
-.contact-form{
-    background: #fff;
-    margin-top: 10%;
-    margin-bottom: 5%;
-    width: 70%;
+.category_block li:hover {
+    background-color: #007bff;
 }
-.contact-form .form-control{
-    border-radius:1rem;
+.category_block li:hover a {
+    color: #ffffff;
 }
-.contact-image{
+.category_block li a {
+    color: #343a40;
+}
+.add_to_cart_block .price {
+    color: #c01508;
+    text-align: center;
+    font-weight: bold;
+    font-size: 200%;
+    margin-bottom: 0;
+}
+.add_to_cart_block .price_discounted {
+    color: #343a40;
+    text-align: center;
+    text-decoration: line-through;
+    font-size: 140%;
+}
+.product_rassurance {
+    padding: 10px;
+    margin-top: 15px;
+    background: #ffffff;
+    border: 1px solid #6c757d;
+    color: #6c757d;
+}
+.product_rassurance .list-inline {
+    margin-bottom: 0;
+    text-transform: uppercase;
     text-align: center;
 }
-.contact-image img{
-    border-radius: 6rem;
-    width: 11%;
-    margin-top: -3%;
-    transform: rotate(29deg);
+.product_rassurance .list-inline li:hover {
+    color: #343a40;
 }
-.contact-form form{
-    padding: 14%;
+.reviews_product .fa-star {
+    color: gold;
 }
-.contact-form form .row{
-    margin-bottom: -7%;
+.pagination {
+    margin-top: 20px;
 }
-.contact-form h3{
-    margin-bottom: 8%;
-    margin-top: -10%;
-    text-align: center;
-    color: #0062cc;
+footer {
+    background: #343a40;
+    padding: 40px;
 }
-.contact-form .btnContact {
-    width: 50%;
-    border: none;
-    border-radius: 1rem;
-    padding: 1.5%;
-    background: #dc3545;
-    font-weight: 600;
-    color: #fff;
-    cursor: pointer;
-}
-.btnContactSubmit
-{
-    width: 50%;
-    border-radius: 1rem;
-    padding: 1.5%;
-    color: #fff;
-    background-color: #0062cc;
-    border: none;
-    cursor: pointer;
+footer a {
+    color: #f8f9fa!important
 }

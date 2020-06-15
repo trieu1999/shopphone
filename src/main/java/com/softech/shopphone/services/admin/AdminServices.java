@@ -56,16 +56,62 @@ public class AdminServices {
 	}
 
 	
-	public DataHolder CRUDProduct(String user_token) {
+	public DataHolder CRUDShowProduct(String user_token) {
 		DataHolder dataHolder = new DataHolder();
 		if (isAdmin(user_token)) {
-			List<RstProduct> rstProduct = productDao.getAllProduct();
+			List<RstProduct> rstProductLst = productDao.getAllProduct();
+			for (RstProduct rstProduct : rstProductLst) {
+				rstProduct.setPriceD(String.format("%.0f",rstProduct.getPrice()));
+			}
 			
-			dataHolder.add("lstProduct", rstProduct);
+			dataHolder.add("lstProduct", rstProductLst);
 			return dataHolder;
 		}
 		
 		dataHolder.error("Quyền truy cập trái phép!");
 		return dataHolder;
 	}
+	
+	public DataHolder editProduct(DataHolder dataHolder, String userToken, RstProduct rstProduct) {
+		
+		try {
+			productDao.editProduct(rstProduct);
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			dataHolder.error("Lỗi hệ thống!");
+			return dataHolder;
+		}
+		
+		dataHolder.ok("Chỉnh sửa thành công");
+		
+		return dataHolder;
+				
+				
+	}
+	
+	public DataHolder deleteProduct(DataHolder dataHolder, String userToken, Integer id_product) {
+		
+		try {
+			productDao.deleteProduct(id_product);
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			dataHolder.error("Lỗi hệ thống!");
+			return dataHolder;
+		}
+		
+		dataHolder.ok("Xoá thành công");
+		
+		return dataHolder;
+		
+		
+	}
+	
+	
+	
+	
+	
+	
+	
 }
